@@ -467,15 +467,21 @@ void MainWindow::init(string fname) {
 }
 
 void MainWindow::onClose(wxCloseEvent &event) {
-	if(program != NULL && program->getMap()->getHasChanged() == true) {
-		if( wxMessageDialog(NULL, ToUnicode("Do you want to save the current map?"),
-			ToUnicode("Question"), wxYES_NO | wxYES_DEFAULT).ShowModal() == wxID_YES) {
-			wxCommandEvent ev;
-			MainWindow::onMenuFileSave(ev);
-		}
-	}
-	delete program;
-	program = NULL;
+    if (program != NULL && program->getMap()->getHasChanged() == true) {
+        if (wxMessageDialog(NULL, ToUnicode("Do you want to save the current map?"), ToUnicode("Question"), wxYES_NO | wxYES_DEFAULT).ShowModal() == wxID_YES) {
+            wxCommandEvent ev;
+            MainWindow::onMenuFileSave(ev);
+             // If map is still dirty, user cancelled the save dialog → abort close
+            if (program->getMap()->getHasChanged() == true) {
+                if (event.CanVeto()) {
+                    event.Veto();
+                }
+                return;
+            }
+        }
+    }
+    delete program;
+    program = NULL;
 
 	//delete glCanvas;
 	if(glCanvas) glCanvas->Destroy();
